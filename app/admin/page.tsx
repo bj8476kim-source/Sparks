@@ -7,6 +7,18 @@ import ConfirmModal from '@/components/ConfirmModal';
 
 type Status = 'pending' | 'approved' | 'hidden';
 type FilterTab = '전체' | '대기중' | '승인됨' | '숨김';
+type ContactStatus = '접수' | '처리완료';
+type AdminSection = 'services' | 'contacts';
+
+interface ContactRow {
+  id: number;
+  created_at: string;
+  email: string;
+  type: '삭제요청' | '일반문의';
+  target_service: string | null;
+  message: string;
+  status: ContactStatus;
+}
 
 interface DbRow {
   id: number;
@@ -86,6 +98,11 @@ export default function AdminPage() {
   const [editRow, setEditRow] = useState<DbRow | null>(null);
   const [editForm, setEditForm] = useState<EditForm | null>(null);
 
+  const [activeSection, setActiveSection] = useState<AdminSection>('services');
+  const [contacts, setContacts] = useState<ContactRow[]>([]);
+  const [contactsLoading, setContactsLoading] = useState(true);
+  const [contactActionLoading, setContactActionLoading] = useState<number | null>(null);
+
   const today = new Date().toISOString().split('T')[0];
 
   function showToast(message: string, ok = true) {
@@ -99,14 +116,15 @@ export default function AdminPage() {
       if (session?.user && session.user.email === ADMIN_EMAIL) {
         setIsAdmin(true);
         fetchAll();
+        fetchContacts();
       } else {
         setIsAdmin((prev) => prev === true ? true : false);
       }
     }
     checkUser();
 
-    const channel = supabase
-      .channel('admin_realtime')
+    const servicesChannel = supabase
+      .channel('admin_services_realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'ai_services' }, () => {
         setIsAdmin((current) => {
           if (current) fetchAll();
@@ -115,7 +133,20 @@ export default function AdminPage() {
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    const contactsChannel = supabase
+      .channel('admin_contacts_realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'contacts' }, () => {
+        setIsAdmin((current) => {
+          if (current) fetchContacts();
+          return current;
+        });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(servicesChannel);
+      supabase.removeChannel(contactsChannel);
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleLogin(e: React.FormEvent) {
@@ -152,6 +183,37 @@ export default function AdminPage() {
       setRows(data as DbRow[]);
     }
     setLoading(false);
+  }
+
+  async function fetchContacts() {
+    setContactsLoading(true);
+    const { data, error } = await supabase
+      .from('contacts')
+      .select('id, created_at, email, type, target_service, message, status')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      showToast('문의 내역 로딩 실패: ' + error.message, false);
+    } else if (data) {
+      setContacts(data as ContactRow[]);
+    }
+    setContactsLoading(false);
+  }
+
+  async function handleContactDone(contact: ContactRow) {
+    setContactActionLoading(contact.id);
+    const { error } = await supabase
+      .from('contacts')
+      .update({ status: '처리완료' })
+      .eq('id', contact.id);
+    setContactActionLoading(null);
+
+    if (error) {
+      showToast('처리 실패: ' + error.message, false);
+      return;
+    }
+    setContacts((prev) => prev.map((c) => c.id === contact.id ? { ...c, status: '처리완료' as ContactStatus } : c));
+    showToast(`"${contact.email}" 문의 처리 완료`);
   }
 
   const filtered = useMemo(() => {
@@ -464,13 +526,35 @@ export default function AdminPage() {
       </header>
 
       <main id="main-content" className="max-w-[1280px] mx-auto px-6 py-10">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold text-zinc-950 tracking-tight mb-1">관리자 대시보드</h1>
             <p className="text-sm text-zinc-500">새로 제출된 AI 서비스들을 검토하고 승인 여부를 결정하세요.</p>
           </div>
         </div>
 
+        {/* 섹션 탭 */}
+        <div className="flex items-center gap-1 bg-zinc-100 rounded-xl p-1 w-fit mb-8">
+          {([
+            { key: 'services', label: '서비스 관리', count: rows.filter((r) => r.status === 'pending').length },
+            { key: 'contacts', label: '문의 내역', count: contacts.filter((c) => c.status === '접수').length },
+          ] as { key: AdminSection; label: string; count: number }[]).map(({ key, label, count }) => (
+            <button
+              key={key}
+              onClick={() => setActiveSection(key)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeSection === key ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-800'}`}
+            >
+              {label}
+              {count > 0 && (
+                <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${activeSection === key ? 'bg-amber-100 text-amber-700' : 'bg-zinc-200 text-zinc-500'}`}>
+                  {count}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {activeSection === 'services' && (<>
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
@@ -651,6 +735,102 @@ export default function AdminPage() {
             </table>
           </div>
         </div>
+        </>)}
+
+        {/* 문의 내역 섹션 */}
+        {activeSection === 'contacts' && (
+          <div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
+              <div>
+                <h2 className="text-lg font-bold text-zinc-950 tracking-tight">문의 및 삭제 요청 내역</h2>
+                <p className="text-sm text-zinc-500 mt-0.5">
+                  {contactsLoading ? '로딩 중...' : `총 ${contacts.length}건 · 미처리 ${contacts.filter((c) => c.status === '접수').length}건`}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white border border-zinc-200 rounded-xl shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-zinc-200 bg-zinc-50/70">
+                      <th scope="col" className="text-left text-xs font-semibold text-zinc-500 px-6 py-3 whitespace-nowrap">이메일</th>
+                      <th scope="col" className="text-left text-xs font-semibold text-zinc-500 px-4 py-3 whitespace-nowrap">유형</th>
+                      <th scope="col" className="text-left text-xs font-semibold text-zinc-500 px-4 py-3 hidden sm:table-cell whitespace-nowrap">대상 서비스</th>
+                      <th scope="col" className="text-left text-xs font-semibold text-zinc-500 px-4 py-3 hidden lg:table-cell">내용</th>
+                      <th scope="col" className="text-left text-xs font-semibold text-zinc-500 px-4 py-3 whitespace-nowrap hidden sm:table-cell">접수일</th>
+                      <th scope="col" className="text-left text-xs font-semibold text-zinc-500 px-4 py-3 whitespace-nowrap">상태</th>
+                      <th scope="col" className="text-right text-xs font-semibold text-zinc-500 px-6 py-3 whitespace-nowrap">처리</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100">
+                    {contactsLoading && Array.from({ length: 3 }).map((_, i) => (
+                      <tr key={i} className="animate-pulse">
+                        <td className="px-6 py-4"><div className="h-4 bg-zinc-100 rounded w-36" /></td>
+                        <td className="px-4 py-4"><div className="h-5 bg-zinc-100 rounded-full w-16" /></td>
+                        <td className="px-4 py-4 hidden sm:table-cell"><div className="h-4 bg-zinc-100 rounded w-28" /></td>
+                        <td className="px-4 py-4 hidden lg:table-cell"><div className="h-4 bg-zinc-100 rounded w-48" /></td>
+                        <td className="px-4 py-4 hidden sm:table-cell"><div className="h-4 bg-zinc-100 rounded w-20" /></td>
+                        <td className="px-4 py-4"><div className="h-5 bg-zinc-100 rounded-full w-14" /></td>
+                        <td className="px-6 py-4"><div className="h-7 bg-zinc-100 rounded w-20 ml-auto" /></td>
+                      </tr>
+                    ))}
+
+                    {!contactsLoading && contacts.map((contact) => {
+                      const isDone = contact.status === '처리완료';
+                      const isActing = contactActionLoading === contact.id;
+
+                      return (
+                        <tr key={contact.id} className={`hover:bg-zinc-50/60 transition-colors ${!isDone ? 'bg-rose-50/20' : ''}`}>
+                          <td className="px-6 py-4">
+                            <p className="text-sm font-medium text-zinc-800 truncate max-w-[180px]">{contact.email}</p>
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${contact.type === '삭제요청' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>
+                              {contact.type}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 hidden sm:table-cell">
+                            <p className="text-zinc-500 text-sm max-w-[160px] truncate">{contact.target_service ?? '—'}</p>
+                          </td>
+                          <td className="px-4 py-4 hidden lg:table-cell">
+                            <p className="text-zinc-500 text-sm max-w-[280px] truncate">{contact.message}</p>
+                          </td>
+                          <td className="px-4 py-4 text-zinc-500 text-sm whitespace-nowrap hidden sm:table-cell">
+                            {contact.created_at.split('T')[0].replace(/-/g, '.')}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                              {contact.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <button
+                              onClick={() => handleContactDone(contact)}
+                              disabled={isDone || isActing}
+                              aria-label={`${contact.email} 문의 처리 완료`}
+                              className="px-3 py-1.5 rounded-md text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                              {isActing ? '처리 중...' : isDone ? '완료됨' : '처리 완료'}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+
+                    {!contactsLoading && contacts.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="px-6 py-20 text-center">
+                          <p className="text-sm text-zinc-400">접수된 문의가 없습니다.</p>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

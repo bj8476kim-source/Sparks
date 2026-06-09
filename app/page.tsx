@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import Header from '@/components/Header';
 import { useToast } from '@/components/Toast';
+import ContactModal from '@/components/ContactModal';
 
 interface Service {
   id: number;
@@ -39,6 +40,7 @@ export default function Home() {
   const [votingId, setVotingId] = useState<number | null>(null);
   const showToast = useToast();
   const mainRef = useRef<HTMLElement>(null);
+  const [contactOpen, setContactOpen] = useState(false);
 
   async function fetchServices() {
     setLoading(true);
@@ -378,7 +380,28 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-zinc-100 bg-zinc-50">
-        <div className="max-w-[1200px] mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        {/* 법적 방어막 문구 */}
+        <div className="max-w-[1200px] mx-auto px-6 pt-8 pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-white border border-zinc-200 rounded-xl">
+            <p className="text-xs text-zinc-500 leading-relaxed max-w-xl">
+              Sparks는 유용한 AI 서비스를 소개하는 큐레이션 플랫폼입니다. 등록된 콘텐츠의 저작권은 원저작자에게 있으며,{' '}
+              <strong className="font-semibold text-zinc-700">권리자 요청 시 즉시 삭제 또는 수정</strong>됩니다.
+            </p>
+            <button
+              type="button"
+              onClick={() => setContactOpen(true)}
+              className="shrink-0 inline-flex items-center gap-1.5 h-8 px-3.5 border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 text-zinc-600 hover:text-zinc-900 text-xs font-semibold rounded-lg transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              콘텐츠 수정/삭제 문의
+            </button>
+          </div>
+        </div>
+
+        {/* 하단 바 */}
+        <div className="max-w-[1200px] mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center shadow-sm shadow-blue-500/10" aria-hidden="true">
               <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -394,6 +417,8 @@ export default function Home() {
           </nav>
         </div>
       </footer>
+
+      {contactOpen && <ContactModal onClose={() => setContactOpen(false)} />}
     </div>
   );
 }
