@@ -161,6 +161,7 @@ export default function AdminPage() {
     } else {
       setIsAdmin(true);
       fetchAll();
+      fetchContacts();
     }
   }
 
