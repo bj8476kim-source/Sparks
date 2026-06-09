@@ -34,3 +34,10 @@ create policy "Authenticated users can update contacts"
   to authenticated
   using (true)
   with check (true);
+
+-- 로그인한 어드민만 삭제 가능
+-- ※ 아직 이 정책을 실행하지 않았다면 Supabase SQL Editor에서 아래 구문을 실행하세요.
+create policy "Authenticated users can delete contacts"
+  on public.contacts for delete
+  to authenticated
+  using (true);

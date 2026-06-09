@@ -204,6 +204,16 @@ export default function AdminPage() {
     setContactsLoading(false);
   }
 
+  async function handleContactDelete(contact: ContactRow) {
+    if (!window.confirm('정말 이 문의를 영구 삭제하시겠습니까?')) return;
+    setContactActionLoading(contact.id);
+    const { error } = await supabase.from('contacts').delete().eq('id', contact.id);
+    setContactActionLoading(null);
+    if (error) { showToast('삭제 실패: ' + error.message, false); return; }
+    setContacts((prev) => prev.filter((c) => c.id !== contact.id));
+    showToast('문의가 삭제되었습니다.');
+  }
+
   async function handleContactDone(contact: ContactRow) {
     setContactActionLoading(contact.id);
     const { error } = await supabase
@@ -813,14 +823,24 @@ export default function AdminPage() {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right">
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleContactDone(contact); }}
-                              disabled={isDone || isActing}
-                              aria-label={`${contact.email} 문의 처리 완료`}
-                              className="px-3 py-1.5 rounded-md text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                            >
-                              {isActing ? '처리 중...' : isDone ? '완료됨' : '처리 완료'}
-                            </button>
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleContactDone(contact); }}
+                                disabled={isDone || isActing}
+                                aria-label={`${contact.email} 문의 처리 완료`}
+                                className="px-3 py-1.5 rounded-md text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                              >
+                                {isActing ? '처리 중...' : isDone ? '완료됨' : '처리 완료'}
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleContactDelete(contact); }}
+                                disabled={isActing}
+                                aria-label={`${contact.email} 문의 삭제`}
+                                className="px-3 py-1.5 rounded-md text-xs font-semibold bg-red-50 hover:bg-red-100 text-red-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                              >
+                                삭제
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
