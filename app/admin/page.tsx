@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import ConfirmModal from '@/components/ConfirmModal';
+import ContactDetailModal from '@/components/ContactDetailModal';
 
 type Status = 'pending' | 'approved' | 'hidden';
 type FilterTab = '전체' | '대기중' | '승인됨' | '숨김';
@@ -102,6 +103,7 @@ export default function AdminPage() {
   const [contacts, setContacts] = useState<ContactRow[]>([]);
   const [contactsLoading, setContactsLoading] = useState(true);
   const [contactActionLoading, setContactActionLoading] = useState<number | null>(null);
+  const [contactDetail, setContactDetail] = useState<ContactRow | null>(null);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -135,9 +137,10 @@ export default function AdminPage() {
 
     const contactsChannel = supabase
       .channel('admin_contacts_realtime')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'contacts' }, () => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'contacts' }, (payload) => {
+        // fetchContacts() 재조회 대신 payload.new를 직접 prepend → 자동완료 경쟁조건 원천 차단
         setIsAdmin((current) => {
-          if (current) fetchContacts();
+          if (current) setContacts((prev) => [payload.new as ContactRow, ...prev]);
           return current;
         });
       })
@@ -782,7 +785,11 @@ export default function AdminPage() {
                       const isActing = contactActionLoading === contact.id;
 
                       return (
-                        <tr key={contact.id} className={`hover:bg-zinc-50/60 transition-colors ${!isDone ? 'bg-rose-50/20' : ''}`}>
+                        <tr
+                          key={contact.id}
+                          onClick={() => setContactDetail(contact)}
+                          className={`hover:bg-zinc-50/60 transition-colors cursor-pointer ${!isDone ? 'bg-rose-50/20' : ''}`}
+                        >
                           <td className="px-6 py-4">
                             <p className="text-sm font-medium text-zinc-800 truncate max-w-[180px]">{contact.email}</p>
                           </td>
@@ -807,7 +814,7 @@ export default function AdminPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right">
                             <button
-                              onClick={() => handleContactDone(contact)}
+                              onClick={(e) => { e.stopPropagation(); handleContactDone(contact); }}
                               disabled={isDone || isActing}
                               aria-label={`${contact.email} 문의 처리 완료`}
                               className="px-3 py-1.5 rounded-md text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
@@ -833,6 +840,13 @@ export default function AdminPage() {
           </div>
         )}
       </main>
+
+      {contactDetail && (
+        <ContactDetailModal
+          contact={contactDetail}
+          onClose={() => setContactDetail(null)}
+        />
+      )}
     </div>
   );
 }
