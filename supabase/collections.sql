@@ -34,11 +34,19 @@ create policy "Public read collections"
 create policy "Service role manages collections"
   on public.collections for all to service_role using (true) with check (true);
 
+-- 로그인한 관리자(authenticated)도 쓰기 허용
+create policy "Authenticated manages collections"
+  on public.collections for all to authenticated using (true) with check (true);
+
 create policy "Public read collection_services"
   on public.collection_services for select to anon, authenticated using (true);
 
 create policy "Service role manages collection_services"
   on public.collection_services for all to service_role using (true) with check (true);
+
+-- 로그인한 관리자(authenticated)도 쓰기 허용
+create policy "Authenticated manages collection_services"
+  on public.collection_services for all to authenticated using (true) with check (true);
 
 -- ============================================================
 -- 시드 데이터 예시 (선택 실행)
