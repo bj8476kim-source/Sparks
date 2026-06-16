@@ -289,60 +289,43 @@ export default function Home() {
                 </h2>
 
                 {loading && (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {Array.from({ length: 5 }).map((_, i) => (
-                      <div key={i} className="flex items-center gap-3 animate-pulse">
+                      <div key={i} className="flex items-center gap-3 px-3 py-3 animate-pulse">
                         <div className="w-6 h-6 rounded-lg bg-zinc-100 shrink-0" />
                         <div className="flex-1 space-y-1.5">
                           <div className="h-3.5 bg-zinc-100 rounded-full w-3/4" />
                           <div className="h-2.5 bg-zinc-50 rounded-full w-1/2" />
                         </div>
-                        <div className="w-10 h-10 rounded-lg bg-zinc-100 shrink-0" />
                       </div>
                     ))}
                   </div>
                 )}
 
                 {!loading && (
-                  <ol className="space-y-1">
+                  <ol className="space-y-0.5">
                     {topServices.map((service, index) => (
                       <li key={service.id}>
                         <button
                           type="button"
                           onClick={() => window.open(service.url, '_blank', 'noopener,noreferrer')}
-                          className="w-full flex items-center gap-3 p-2.5 rounded-2xl hover:bg-slate-50 hover:-translate-y-0.5 transition-all duration-200 ease-in-out text-left group"
+                          className="w-full flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-slate-50 transition-all duration-200 ease-in-out text-left group"
                           aria-label={`${index + 1}위 ${service.name} - 새 탭에서 열기`}
                         >
                           <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-extrabold shrink-0 ${RANK_COLORS[index]}`}>
                             {index + 1}
                           </span>
                           <div className="flex-1 min-w-0">
-                            <p className="text-[13px] font-bold text-zinc-900 leading-snug truncate group-hover:text-violet-700 transition-colors">
+                            <p className="text-[13px] font-semibold text-zinc-900 leading-snug truncate group-hover:text-violet-700 transition-colors">
                               {service.name}
                             </p>
-                            <p className="text-[11px] text-zinc-400 truncate mt-0.5 flex items-center gap-1">
-                              <svg className="w-2.5 h-2.5 text-rose-400 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                              </svg>
-                              {service.upvotes}
+                            <p className="text-xs text-zinc-500 truncate mt-0.5 leading-relaxed">
+                              {service.description}
                             </p>
-                          </div>
-                          <div className={`w-10 h-10 rounded-2xl overflow-hidden shrink-0 bg-gradient-to-br ${service.thumbnail_gradient} flex items-center justify-center`}>
-                            {service.thumbnail_url ? (
-                              <Image
-                                src={service.thumbnail_url}
-                                alt={service.name}
-                                width={40}
-                                height={40}
-                                className="w-full h-full object-cover rounded-2xl"
-                              />
-                            ) : (
-                              <span className="text-white/40 text-sm font-black select-none" aria-hidden="true">{service.name[0]}</span>
-                            )}
                           </div>
                         </button>
                         {index < topServices.length - 1 && (
-                          <div className="mx-2.5 border-b border-zinc-50" />
+                          <div className="mx-3 border-b border-zinc-50" />
                         )}
                       </li>
                     ))}
