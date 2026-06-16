@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import { SITE_URL } from "@/lib/constants";
@@ -77,6 +78,18 @@ export default function RootLayout({
           본문으로 건너뛰기
         </a>
         <Providers>{children}</Providers>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-YDK8SL1H93"
+          strategy="afterInteractive"
+        />
+        <Script id="ga4-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-YDK8SL1H93');
+          `}
+        </Script>
       </body>
     </html>
   );
