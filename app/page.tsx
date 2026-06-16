@@ -358,7 +358,7 @@ export default function Home() {
                         <button
                           type="button"
                           onClick={() => window.open(service.url, '_blank', 'noopener,noreferrer')}
-                          className="w-full flex items-center gap-3 p-2.5 rounded-2xl hover:bg-violet-50/60 transition-colors duration-200 text-left group"
+                          className="w-full flex items-center gap-3 p-2.5 rounded-2xl hover:bg-slate-50 hover:-translate-y-0.5 transition-all duration-200 ease-in-out text-left group"
                           aria-label={`${index + 1}위 ${service.name} - 새 탭에서 열기`}
                         >
                           {/* Rank badge */}
@@ -380,19 +380,17 @@ export default function Home() {
                           </div>
 
                           {/* Mini thumbnail */}
-                          <div className={`relative w-10 h-10 rounded-xl overflow-hidden shrink-0 bg-gradient-to-br ${service.thumbnail_gradient}`}>
+                          <div className={`w-10 h-10 rounded-2xl overflow-hidden shrink-0 bg-gradient-to-br ${service.thumbnail_gradient} flex items-center justify-center`}>
                             {service.thumbnail_url ? (
                               <Image
                                 src={service.thumbnail_url}
                                 alt={service.name}
-                                fill
-                                className="object-cover"
-                                sizes="40px"
+                                width={40}
+                                height={40}
+                                className="w-full h-full object-cover rounded-2xl"
                               />
                             ) : (
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <span className="text-white/40 text-sm font-black select-none" aria-hidden="true">{service.name[0]}</span>
-                              </div>
+                              <span className="text-white/40 text-sm font-black select-none" aria-hidden="true">{service.name[0]}</span>
                             )}
                           </div>
                         </button>
