@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const supabaseHostname = 'zrcgwqavvpcsuiniapbz.supabase.co';
+const isDev = process.env.NODE_ENV === 'development';
 
 const securityHeaders = [
   { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains; preload' },
@@ -12,7 +13,7 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.clarity.ms",
+      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://www.googletagmanager.com https://www.clarity.ms`,
       "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
       `img-src 'self' data: blob: https://${supabaseHostname} https://www.google-analytics.com`,
       `connect-src 'self' https://${supabaseHostname} wss://${supabaseHostname} https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://www.clarity.ms`,
