@@ -9,7 +9,7 @@ import ContactDetailModal from '@/components/ContactDetailModal';
 type Status = 'pending' | 'approved' | 'hidden';
 type FilterTab = '전체' | '대기중' | '승인됨' | '숨김';
 type ContactStatus = '접수' | '처리완료';
-type AdminSection = 'services' | 'contacts';
+type AdminSection = 'services' | 'contacts' | 'collections';
 
 interface ContactRow {
   id: number;
@@ -37,6 +37,18 @@ interface DbRow {
 interface ConfirmState {
   row: DbRow;
   action: 'delete';
+}
+
+interface CollectionRow {
+  id: string;
+  title: string;
+  priority: number;
+  created_at: string;
+}
+
+interface CollectionForm {
+  title: string;
+  priority: number;
 }
 
 interface EditForm {
@@ -104,6 +116,18 @@ export default function AdminPage() {
   const [contactsLoading, setContactsLoading] = useState(true);
   const [contactActionLoading, setContactActionLoading] = useState<number | null>(null);
   const [contactDetail, setContactDetail] = useState<ContactRow | null>(null);
+
+  // Collections state
+  const [collections, setCollections] = useState<CollectionRow[]>([]);
+  const [collectionsLoading, setCollectionsLoading] = useState(false);
+  const [collectionForm, setCollectionForm] = useState<CollectionForm | null>(null);
+  const [editingCollection, setEditingCollection] = useState<CollectionRow | null>(null);
+  const [pickerCollection, setPickerCollection] = useState<CollectionRow | null>(null);
+  const [pickerServices, setPickerServices] = useState<number[]>([]);
+  const [allApprovedServices, setAllApprovedServices] = useState<DbRow[]>([]);
+  const [pickerLoading, setPickerLoading] = useState(false);
+  const [pickerSearch, setPickerSearch] = useState('');
+  const [pickerSaving, setPickerSaving] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -202,6 +226,73 @@ export default function AdminPage() {
       setContacts(data as ContactRow[]);
     }
     setContactsLoading(false);
+  }
+
+  async function fetchCollections() {
+    setCollectionsLoading(true);
+    const { data, error } = await supabase
+      .from('collections')
+      .select('id, title, priority, created_at')
+      .order('priority', { ascending: true });
+    if (error) showToast('컬렉션 로딩 실패: ' + error.message, false);
+    else if (data) setCollections(data as CollectionRow[]);
+    setCollectionsLoading(false);
+  }
+
+  async function handleCollectionSave() {
+    if (!collectionForm) return;
+    const title = collectionForm.title.trim();
+    if (!title) { showToast('테마명을 입력하세요.', false); return; }
+
+    if (editingCollection) {
+      const { error } = await supabase.from('collections').update({ title, priority: collectionForm.priority }).eq('id', editingCollection.id);
+      if (error) { showToast('수정 실패: ' + error.message, false); return; }
+      setCollections((prev) => prev.map((c) => c.id === editingCollection.id ? { ...c, title, priority: collectionForm.priority } : c).sort((a, b) => a.priority - b.priority));
+      showToast(`"${title}" 테마 수정 완료`);
+    } else {
+      const { data, error } = await supabase.from('collections').insert({ title, priority: collectionForm.priority }).select();
+      if (error) { showToast('추가 실패: ' + error.message, false); return; }
+      if (data) setCollections((prev) => [...prev, data[0] as CollectionRow].sort((a, b) => a.priority - b.priority));
+      showToast(`"${title}" 테마 추가 완료`);
+    }
+    setCollectionForm(null);
+    setEditingCollection(null);
+  }
+
+  async function handleCollectionDelete(col: CollectionRow) {
+    if (!window.confirm(`"${col.title}" 테마를 삭제하시겠습니까? 연결된 서비스 픽도 함께 삭제됩니다.`)) return;
+    const { error } = await supabase.from('collections').delete().eq('id', col.id);
+    if (error) { showToast('삭제 실패: ' + error.message, false); return; }
+    setCollections((prev) => prev.filter((c) => c.id !== col.id));
+    showToast(`"${col.title}" 테마 삭제 완료`);
+  }
+
+  async function openServicePicker(col: CollectionRow) {
+    setPickerCollection(col);
+    setPickerLoading(true);
+    setPickerSearch('');
+    const [svcRes, pickRes] = await Promise.all([
+      supabase.from('ai_services').select('id, name, url, description, category, status, upvotes, thumbnail_gradient, thumbnail_url, created_at').eq('status', 'approved').order('upvotes', { ascending: false }),
+      supabase.from('collection_services').select('service_id').eq('collection_id', col.id),
+    ]);
+    if (svcRes.data) setAllApprovedServices(svcRes.data as DbRow[]);
+    if (pickRes.data) setPickerServices(pickRes.data.map((r: { service_id: number }) => r.service_id));
+    setPickerLoading(false);
+  }
+
+  async function handlePickerSave() {
+    if (!pickerCollection) return;
+    setPickerSaving(true);
+    const { data: current } = await supabase.from('collection_services').select('service_id').eq('collection_id', pickerCollection.id);
+    const currentIds = (current ?? []).map((r: { service_id: number }) => r.service_id);
+    const toAdd = pickerServices.filter((id) => !currentIds.includes(id));
+    const toRemove = currentIds.filter((id: number) => !pickerServices.includes(id));
+    if (toAdd.length > 0) await supabase.from('collection_services').insert(toAdd.map((id, i) => ({ collection_id: pickerCollection.id, service_id: id, sort_order: currentIds.length + i })));
+    if (toRemove.length > 0) await supabase.from('collection_services').delete().eq('collection_id', pickerCollection.id).in('service_id', toRemove);
+    setPickerSaving(false);
+    showToast(`"${pickerCollection.title}" 서비스 픽 저장 완료`);
+    setPickerCollection(null);
+    setPickerServices([]);
   }
 
   async function handleContactDelete(contact: ContactRow) {
@@ -552,10 +643,11 @@ export default function AdminPage() {
           {([
             { key: 'services', label: '서비스 관리', count: rows.filter((r) => r.status === 'pending').length },
             { key: 'contacts', label: '문의 내역', count: contacts.filter((c) => c.status === '접수').length },
+            { key: 'collections', label: '🎯 테마 관리', count: 0 },
           ] as { key: AdminSection; label: string; count: number }[]).map(({ key, label, count }) => (
             <button
               key={key}
-              onClick={() => setActiveSection(key)}
+              onClick={() => { setActiveSection(key); if (key === 'collections' && collections.length === 0) fetchCollections(); }}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeSection === key ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-800'}`}
             >
               {label}
@@ -751,6 +843,89 @@ export default function AdminPage() {
         </div>
         </>)}
 
+        {/* 테마 관리 섹션 */}
+        {activeSection === 'collections' && (
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-lg font-bold text-zinc-950 tracking-tight">테마 컬렉션 관리</h2>
+                <p className="text-sm text-zinc-500 mt-0.5">메인 화면 좌측에 노출되는 큐레이션 테마를 설정합니다.</p>
+              </div>
+              <button
+                onClick={() => { setEditingCollection(null); setCollectionForm({ title: '', priority: (collections.length + 1) }); }}
+                className="h-9 px-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-bold rounded-xl transition-all shadow-sm shadow-indigo-200/50"
+              >
+                + 새 테마 추가
+              </button>
+            </div>
+
+            {collectionsLoading && (
+              <div className="space-y-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-16 bg-white border border-zinc-200 rounded-xl animate-pulse" />
+                ))}
+              </div>
+            )}
+
+            {!collectionsLoading && collections.length === 0 && (
+              <div className="py-20 text-center bg-white border border-zinc-200 rounded-xl">
+                <p className="text-3xl mb-3">🎯</p>
+                <p className="text-sm font-semibold text-zinc-700 mb-1">등록된 테마가 없습니다</p>
+                <p className="text-xs text-zinc-400 mb-4">먼저 Supabase에서 collections.sql을 실행하고 테마를 추가하세요.</p>
+              </div>
+            )}
+
+            {!collectionsLoading && collections.length > 0 && (
+              <div className="bg-white border border-zinc-200 rounded-xl shadow-sm overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-zinc-200 bg-zinc-50/70">
+                      <th scope="col" className="text-left text-xs font-semibold text-zinc-500 px-6 py-3">테마명</th>
+                      <th scope="col" className="text-left text-xs font-semibold text-zinc-500 px-4 py-3 w-24">우선순위</th>
+                      <th scope="col" className="text-right text-xs font-semibold text-zinc-500 px-6 py-3">관리</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100">
+                    {collections.map((col) => (
+                      <tr key={col.id} className="hover:bg-zinc-50/60 transition-colors">
+                        <td className="px-6 py-4">
+                          <p className="font-semibold text-zinc-900">{col.title}</p>
+                          <p className="text-xs text-zinc-400 mt-0.5">{col.created_at.split('T')[0].replace(/-/g, '.')}</p>
+                        </td>
+                        <td className="px-4 py-4">
+                          <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-violet-50 text-violet-700">P{col.priority}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => openServicePicker(col)}
+                              className="px-3 py-1.5 rounded-md text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors"
+                            >
+                              서비스 픽 ✏️
+                            </button>
+                            <button
+                              onClick={() => { setEditingCollection(col); setCollectionForm({ title: col.title, priority: col.priority }); }}
+                              className="px-3 py-1.5 rounded-md text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-700 transition-colors"
+                            >
+                              수정
+                            </button>
+                            <button
+                              onClick={() => handleCollectionDelete(col)}
+                              className="px-3 py-1.5 rounded-md text-xs font-semibold bg-red-50 hover:bg-red-100 text-red-600 transition-colors"
+                            >
+                              삭제
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* 문의 내역 섹션 */}
         {activeSection === 'contacts' && (
           <div>
@@ -866,6 +1041,100 @@ export default function AdminPage() {
           contact={contactDetail}
           onClose={() => setContactDetail(null)}
         />
+      )}
+
+      {/* Collection Form Modal */}
+      {collectionForm !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={() => { setCollectionForm(null); setEditingCollection(null); }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-bold text-zinc-950 mb-5">{editingCollection ? '테마 수정' : '새 테마 추가'}</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-zinc-500 mb-1.5">테마명</label>
+                <input
+                  type="text"
+                  value={collectionForm.title}
+                  onChange={(e) => setCollectionForm((f) => f ? { ...f, title: e.target.value } : f)}
+                  placeholder="예: Sparks 추천 PICK ⚡"
+                  className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-sm text-zinc-900 bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-violet-400 transition"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-zinc-500 mb-1.5">우선순위 (낮을수록 먼저 표시)</label>
+                <input
+                  type="number"
+                  value={collectionForm.priority}
+                  onChange={(e) => setCollectionForm((f) => f ? { ...f, priority: Number(e.target.value) } : f)}
+                  min={1}
+                  className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-sm text-zinc-900 bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-violet-400 transition"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 mt-6">
+              <button onClick={handleCollectionSave} className="flex-1 h-10 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-bold rounded-xl transition-all">
+                저장
+              </button>
+              <button onClick={() => { setCollectionForm(null); setEditingCollection(null); }} className="flex-1 h-10 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-semibold rounded-xl transition-colors">
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Service Picker Modal */}
+      {pickerCollection !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={() => { setPickerCollection(null); setPickerServices([]); }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[80vh]" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 pt-6 pb-4 border-b border-zinc-100">
+              <h2 className="text-base font-bold text-zinc-950 mb-1">서비스 픽 관리</h2>
+              <p className="text-xs text-zinc-500">테마: <strong>{pickerCollection.title}</strong></p>
+              <input
+                type="search"
+                placeholder="서비스명 검색..."
+                value={pickerSearch}
+                onChange={(e) => setPickerSearch(e.target.value)}
+                className="mt-3 w-full h-9 px-3 rounded-xl border border-zinc-200 text-sm bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-violet-400 transition"
+              />
+            </div>
+            <div className="overflow-y-auto flex-1 px-4 py-2">
+              {pickerLoading && <p className="text-center text-sm text-zinc-400 py-8">로딩 중...</p>}
+              {!pickerLoading && allApprovedServices
+                .filter((s) => s.name.toLowerCase().includes(pickerSearch.toLowerCase()))
+                .map((s) => {
+                  const checked = pickerServices.includes(s.id);
+                  return (
+                    <label key={s.id} className="flex items-center gap-3 py-2.5 px-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => setPickerServices((prev) => checked ? prev.filter((id) => id !== s.id) : [...prev, s.id])}
+                        className="w-4 h-4 rounded accent-violet-600 shrink-0"
+                      />
+                      <div className={`w-8 h-8 rounded-lg shrink-0 bg-gradient-to-br ${s.thumbnail_gradient} flex items-center justify-center`}>
+                        <span className="text-white/40 text-xs font-black">{s.name[0]}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-zinc-900 truncate">{s.name}</p>
+                        <p className="text-[11px] text-zinc-400 truncate">{s.category} · ♥ {s.upvotes}</p>
+                      </div>
+                    </label>
+                  );
+                })}
+            </div>
+            <div className="px-6 py-4 border-t border-zinc-100 flex items-center justify-between gap-3">
+              <span className="text-xs text-zinc-400">{pickerServices.length}개 선택됨</span>
+              <div className="flex gap-2">
+                <button onClick={() => { setPickerCollection(null); setPickerServices([]); }} className="h-9 px-4 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-semibold rounded-xl transition-colors">
+                  취소
+                </button>
+                <button onClick={handlePickerSave} disabled={pickerSaving} className="h-9 px-5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-bold rounded-xl transition-all disabled:opacity-60">
+                  {pickerSaving ? '저장 중...' : '저장'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
