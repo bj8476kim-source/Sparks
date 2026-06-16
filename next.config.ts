@@ -13,10 +13,10 @@ const securityHeaders = [
     value: [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.clarity.ms",
-      "style-src 'self' 'unsafe-inline'",
+      "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
       `img-src 'self' data: blob: https://${supabaseHostname} https://www.google-analytics.com`,
       `connect-src 'self' https://${supabaseHostname} wss://${supabaseHostname} https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://www.clarity.ms`,
-      "font-src 'self' https://fonts.gstatic.com",
+      "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net",
       "frame-ancestors 'none'",
     ].join('; '),
   },

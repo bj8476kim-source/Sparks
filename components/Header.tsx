@@ -36,13 +36,9 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-zinc-100 transition-all">
       <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2.5 group" aria-label="Sparks 홈으로">
-            <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center shadow-sm shadow-blue-500/20">
-              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 3 L13.5 10.5 L21 12 L13.5 13.5 L12 21 L10.5 13.5 L3 12 L10.5 10.5 Z" />
-              </svg>
-            </div>
-            <span className="text-[15px] font-bold text-zinc-950 tracking-tight">Sparks</span>
+          <Link href="/" className="flex items-center gap-2 group" aria-label="Sparks 홈으로">
+            <span className="text-xl leading-none" aria-hidden="true">⚡</span>
+            <span className="text-[15px] font-bold tracking-tight bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent" style={{ fontFamily: "'Pretendard Variable', Pretendard, sans-serif" }}>Sparks</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6" aria-label="주요 메뉴">
             <Link
