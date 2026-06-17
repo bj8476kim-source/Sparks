@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -37,8 +38,8 @@ export default function Header() {
       <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2 group" aria-label="flint 홈으로">
-            <span className="text-xl leading-none" aria-hidden="true">🔮</span>
-            <span className="text-[15px] font-extrabold text-purple-900 tracking-tight" style={{ fontFamily: "'Pretendard Variable', Pretendard, sans-serif" }}>flint</span>
+            <Image src="/favicon.png" alt="" width={32} height={32} className="h-8 w-8 object-contain" />
+            <Image src="/text-logo.png" alt="" width={64} height={29} className="h-7 w-auto object-contain" />
           </Link>
           <nav className="hidden md:flex items-center gap-6" aria-label="주요 메뉴">
             <Link

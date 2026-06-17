@@ -183,10 +183,10 @@ export default function Home() {
               {!loading && collectionServices.length === 0 && (
                 <div className="py-20 text-center rounded-3xl bg-white border border-zinc-100">
                   <Image
-                    src="/avatar-otter.png"
+                    src="/main-character.png"
                     alt="플린트 캐릭터"
                     width={96}
-                    height={96}
+                    height={94}
                     className="mx-auto mb-3 w-24 h-24 object-contain"
                   />
                   <p className="text-sm font-semibold text-zinc-700 mb-1">플린트가 킬러 AI 서비스를 열심히 큐레이션하고 있어요!</p>
