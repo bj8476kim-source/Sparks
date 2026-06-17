@@ -1,4 +1,4 @@
-// Sparks DB 타입 정의 — collections.sql 스키마와 동기화 유지
+// flint DB 타입 정의 — collections.sql 스키마와 동기화 유지
 
 export interface Service {
   id: number;

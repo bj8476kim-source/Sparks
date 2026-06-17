@@ -280,7 +280,7 @@ export default function AllServicesPage() {
         <div className="max-w-[1200px] mx-auto px-6 pt-8 pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-white border border-zinc-200 rounded-xl">
             <p className="text-xs text-zinc-500 leading-relaxed max-w-xl">
-              Sparks는 유용한 AI 서비스를 소개하는 큐레이션 플랫폼입니다. 등록된 콘텐츠의 저작권은 원저작자에게 있으며,{' '}
+              flint는 유용한 AI 서비스를 소개하는 큐레이션 플랫폼입니다. 등록된 콘텐츠의 저작권은 원저작자에게 있으며,{' '}
               <strong className="font-semibold text-zinc-700">권리자 요청 시 즉시 삭제 또는 수정</strong>됩니다.
             </p>
             <button
@@ -294,10 +294,10 @@ export default function AllServicesPage() {
         </div>
         <div className="max-w-[1200px] mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-1.5">
-            <span className="text-base leading-none" aria-hidden="true">⚡</span>
-            <span className="text-sm font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent" style={{ fontFamily: "'Pretendard Variable', Pretendard, sans-serif" }}>Sparks</span>
+            <span className="text-base leading-none" aria-hidden="true">🔮</span>
+            <span className="text-sm font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent" style={{ fontFamily: "'Pretendard Variable', Pretendard, sans-serif" }}>flint</span>
           </div>
-          <p className="text-xs text-zinc-400">© 2026 Sparks. All rights reserved.</p>
+          <p className="text-xs text-zinc-400">© 2026 flint. All rights reserved.</p>
           <nav aria-label="푸터 링크" className="flex items-center gap-5">
             <a href="#" className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors">Privacy Policy</a>
             <a href="#" className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors">Terms of Service</a>

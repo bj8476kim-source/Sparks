@@ -138,7 +138,7 @@ export default function Home() {
                     {loading ? (
                       <span className="inline-block w-48 h-6 bg-zinc-200 rounded-lg animate-pulse" />
                     ) : (
-                      collection?.title ?? 'Sparks 추천 PICK ⚡'
+                      collection?.title ?? 'flint 추천 PICK ⚡'
                     )}
                   </h2>
                   <p className="text-xs text-zinc-400 mt-0.5">총 {totalCount}개 서비스</p>
@@ -182,8 +182,10 @@ export default function Home() {
               {/* Empty state */}
               {!loading && collectionServices.length === 0 && (
                 <div className="py-20 text-center rounded-3xl bg-white border border-zinc-100">
-                  <p className="text-3xl mb-3">🔮</p>
-                  <p className="text-sm font-semibold text-zinc-700 mb-1">컬렉션 준비 중이에요</p>
+                  <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-purple-50 flex items-center justify-center text-3xl" aria-hidden="true">
+                    🦦
+                  </div>
+                  <p className="text-sm font-semibold text-zinc-700 mb-1">플린트가 킬러 AI 서비스를 열심히 큐레이션하고 있어요!</p>
                   <p className="text-xs text-zinc-400 mb-5">곧 엄선된 AI 서비스를 소개할게요.</p>
                   <Link href="/all" className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:underline">
                     전체 서비스 둘러보기 →
@@ -353,7 +355,7 @@ export default function Home() {
         <div className="max-w-[1200px] mx-auto px-6 pt-8 pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-white border border-zinc-200 rounded-xl">
             <p className="text-xs text-zinc-500 leading-relaxed max-w-xl">
-              Sparks는 유용한 AI 서비스를 소개하는 큐레이션 플랫폼입니다. 등록된 콘텐츠의 저작권은 원저작자에게 있으며,{' '}
+              flint는 유용한 AI 서비스를 소개하는 큐레이션 플랫폼입니다. 등록된 콘텐츠의 저작권은 원저작자에게 있으며,{' '}
               <strong className="font-semibold text-zinc-700">권리자 요청 시 즉시 삭제 또는 수정</strong>됩니다.
             </p>
             <button
@@ -370,10 +372,10 @@ export default function Home() {
         </div>
         <div className="max-w-[1200px] mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-1.5">
-            <span className="text-base leading-none" aria-hidden="true">⚡</span>
-            <span className="text-sm font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent" style={{ fontFamily: "'Pretendard Variable', Pretendard, sans-serif" }}>Sparks</span>
+            <span className="text-base leading-none" aria-hidden="true">🔮</span>
+            <span className="text-sm font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent" style={{ fontFamily: "'Pretendard Variable', Pretendard, sans-serif" }}>flint</span>
           </div>
-          <p className="text-xs text-zinc-400">© 2026 Sparks. All rights reserved.</p>
+          <p className="text-xs text-zinc-400">© 2026 flint. All rights reserved.</p>
           <nav aria-label="푸터 링크" className="flex items-center gap-5">
             <a href="#" className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors">Privacy Policy</a>
             <a href="#" className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors">Terms of Service</a>

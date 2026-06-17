@@ -613,7 +613,7 @@ export default function AdminPage() {
       <header className="sticky top-0 z-50 bg-white border-b border-zinc-200">
         <div className="max-w-[1280px] mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-8">
-            <Link href="/" className="text-[15px] font-bold text-zinc-950 tracking-tight">Sparks</Link>
+            <Link href="/" className="text-[15px] font-bold text-zinc-950 tracking-tight">flint</Link>
             <span className="text-xs font-semibold px-2 py-0.5 bg-red-50 text-red-600 rounded-md">Admin</span>
           </div>
           <div className="flex items-center gap-3">
@@ -1055,7 +1055,7 @@ export default function AdminPage() {
                   type="text"
                   value={collectionForm.title}
                   onChange={(e) => setCollectionForm((f) => f ? { ...f, title: e.target.value } : f)}
-                  placeholder="예: Sparks 추천 PICK ⚡"
+                  placeholder="예: flint 추천 PICK ⚡"
                   className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-sm text-zinc-900 bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-violet-400 transition"
                 />
               </div>

@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 
-export const alt = 'Sparks — 일반인이 AI로 만든 서비스 모음';
+export const alt = 'flint — 일반인이 AI로 만든 서비스 모음';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -31,7 +31,7 @@ export default function Image() {
             marginBottom: 20,
           }}
         >
-          ✨ Sparks
+          🔮 flint
         </div>
         <div
           style={{

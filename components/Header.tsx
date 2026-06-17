@@ -36,9 +36,9 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-zinc-100 transition-all">
       <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2 group" aria-label="Sparks 홈으로">
-            <span className="text-xl leading-none" aria-hidden="true">⚡</span>
-            <span className="text-[15px] font-bold tracking-tight bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent" style={{ fontFamily: "'Pretendard Variable', Pretendard, sans-serif" }}>Sparks</span>
+          <Link href="/" className="flex items-center gap-2 group" aria-label="flint 홈으로">
+            <span className="text-xl leading-none" aria-hidden="true">🔮</span>
+            <span className="text-[15px] font-extrabold text-purple-900 tracking-tight" style={{ fontFamily: "'Pretendard Variable', Pretendard, sans-serif" }}>flint</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6" aria-label="주요 메뉴">
             <Link

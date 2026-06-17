@@ -18,26 +18,26 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Sparks — 일반인이 AI로 만든 서비스 모음",
-    template: "%s | Sparks",
+    default: "flint — 일반인이 AI로 만든 서비스 모음",
+    template: "%s | flint",
   },
   description:
     "코딩 몰라도 괜찮아요. 일반인이 AI로 만든 기발하고 창의적인 서비스 쇼케이스. 재미·게임·창작·일상·공부·비즈니스 카테고리의 AI 서비스를 발견하고, 나만의 서비스도 등록해보세요.",
   keywords: [
     "AI 서비스", "AI 도구 모음", "인공지능 서비스", "노코드 AI", "AI 쇼케이스",
-    "AI 만들기", "일반인 AI", "스파크스", "Sparks",
+    "AI 만들기", "일반인 AI", "플린트", "flint",
   ],
   openGraph: {
-    title: "Sparks — 일반인이 AI로 만든 서비스 모음",
+    title: "flint — 일반인이 AI로 만든 서비스 모음",
     description: "코딩 몰라도 괜찮아요. AI로 만든 창의적인 서비스를 발견하세요.",
     type: "website",
     locale: "ko_KR",
     url: SITE_URL,
-    siteName: "Sparks",
+    siteName: "flint",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Sparks — 일반인이 AI로 만든 서비스 모음",
+    title: "flint — 일반인이 AI로 만든 서비스 모음",
     description: "코딩 몰라도 괜찮아요. AI로 만든 창의적인 서비스를 발견하세요.",
   },
   alternates: { canonical: SITE_URL },
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "Sparks",
+  name: "flint",
   description: "일반인이 AI로 만든 서비스 쇼케이스 플랫폼",
   url: SITE_URL,
   inLanguage: "ko",

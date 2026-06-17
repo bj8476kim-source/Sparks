@@ -205,14 +205,14 @@ export default function SubmitPage() {
               </p>
               <p className="text-sm text-zinc-400 leading-relaxed mb-8">
                 검토까지 보통 <strong className="text-zinc-600">24시간</strong> 이내 소요됩니다.
-                승인 후 Sparks에 자동으로 소개됩니다.
+                승인 후 flint에 자동으로 소개됩니다.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link
                   href="/"
                   className="h-10 px-5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors flex items-center justify-center"
                 >
-                  Sparks 둘러보기
+                  flint 둘러보기
                 </Link>
                 <button
                   type="button"
@@ -241,7 +241,7 @@ export default function SubmitPage() {
                 내가 만든 AI 서비스 등록하기
               </h1>
               <p className="text-sm text-zinc-500 leading-relaxed">
-                AI로 직접 만든 서비스를 Sparks에 올려보세요. 검토 후 모두에게 소개됩니다.
+                AI로 직접 만든 서비스를 flint에 올려보세요. 검토 후 모두에게 소개됩니다.
               </p>
             </div>
 
@@ -458,8 +458,8 @@ export default function SubmitPage() {
       {/* Footer */}
       <footer className="border-t border-zinc-200 bg-white">
         <div className="max-w-[1200px] mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="text-sm font-bold text-zinc-950">Sparks</span>
-          <p className="text-xs text-zinc-400">© 2026 Sparks. All rights reserved.</p>
+          <span className="text-sm font-bold text-zinc-950">flint</span>
+          <p className="text-xs text-zinc-400">© 2026 flint. All rights reserved.</p>
           <nav aria-label="푸터 링크" className="flex items-center gap-5">
             <a href="#" className="text-xs text-zinc-400 hover:text-zinc-700 transition-colors">Privacy Policy</a>
             <a href="#" className="text-xs text-zinc-400 hover:text-zinc-700 transition-colors">Terms of Service</a>

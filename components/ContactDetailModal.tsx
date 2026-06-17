@@ -46,8 +46,8 @@ export default function ContactDetailModal({ contact, onClose }: ContactDetailMo
   }, [onClose]);
 
   const mailtoHref = `mailto:${contact.email}?subject=${encodeURIComponent(
-    '[Sparks 문의 답변] ' + (contact.target_service ?? contact.type)
-  )}&body=${encodeURIComponent('안녕하세요.\n\nSparks 운영팀입니다.\n\n문의 주신 내용에 대해 답변 드립니다.\n\n')}`;
+    '[flint 문의 답변] ' + (contact.target_service ?? contact.type)
+  )}&body=${encodeURIComponent('안녕하세요.\n\nflint 운영팀입니다.\n\n문의 주신 내용에 대해 답변 드립니다.\n\n')}`;
 
   return (
     <div
