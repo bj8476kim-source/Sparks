@@ -182,9 +182,13 @@ export default function Home() {
               {/* Empty state */}
               {!loading && collectionServices.length === 0 && (
                 <div className="py-20 text-center rounded-3xl bg-white border border-zinc-100">
-                  <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-purple-50 flex items-center justify-center text-3xl" aria-hidden="true">
-                    🦦
-                  </div>
+                  <Image
+                    src="/avatar-otter.png"
+                    alt="플린트 캐릭터"
+                    width={96}
+                    height={96}
+                    className="mx-auto mb-3 w-24 h-24 object-contain"
+                  />
                   <p className="text-sm font-semibold text-zinc-700 mb-1">플린트가 킬러 AI 서비스를 열심히 큐레이션하고 있어요!</p>
                   <p className="text-xs text-zinc-400 mb-5">곧 엄선된 AI 서비스를 소개할게요.</p>
                   <Link href="/all" className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:underline">
